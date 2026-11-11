@@ -1,0 +1,22 @@
+{
+ "procesos_ok": 273,
+ "procesos_ms": 133,
+ "renglones": 4987,
+ "ofertas": 13049,
+ "oferentes": 315,
+ "share_desierto": 0.14537798275516342,
+ "share_una_oferta": 0.21475837176659315,
+ "ms_share_desierto_o_una": 0.5880398671096345,
+ "years": [
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ]
+}

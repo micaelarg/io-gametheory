@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Step-by-step case study: an open-source game-theory skill applied to Argentina's federal drug purchases.">
+<title>Bidding for Argentina's Medicines</title>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~68ch) with figures that breathe wider; a procurement-file feel - process numbers, catalog codes, stamps. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #111417;
+  --ink-2: #4a5159;
+  --ink-3: #6b737c;
+  --rule: #dde1e5;
+  --accent: #2a78d6;      /* series / links */
+  --thin: #eb6834;        /* thin competition highlight */
+  --stamp: #1f5fae;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121416; --surface: #1a1d20; --ink: #eef0f2; --ink-2: #c2c8ce; --ink-3: #98a0a8; --rule: #2c3136;
+    --accent: #3987e5; --thin: #e0703f; --stamp: #7fb0ec; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121416; --surface: #1a1d20; --ink: #eef0f2; --ink-2: #c2c8ce; --ink-3: #98a0a8; --rule: #2c3136;
+  --accent: #3987e5; --thin: #e0703f; --stamp: #7fb0ec; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+.wide { max-width: 940px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2.1rem, 5.5vw, 3.4rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.45rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 1.08rem; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); font-size: 0.86em; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+header.hero { padding-block: 56px 36px; display: grid; gap: 20px; }
+.dek { font-size: 1.2rem; color: var(--ink-2); max-width: 60ch; }
+.stamp {
+  justify-self: start; display: inline-flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline;
+  border: 1.5px solid var(--stamp); color: var(--stamp); border-radius: 3px; padding: 6px 12px;
+  font-family: var(--font-mono); font-size: 0.8rem; transform: rotate(-0.6deg);
+}
+.stamp b { font-weight: 500; }
+section { padding-block: 40px; border-top: 1px solid var(--rule); display: grid; gap: 18px; }
+.lede-num { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.4rem, 6vw, 3.4rem); line-height: 1; color: var(--thin); font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.kpi { display: grid; gap: 4px; align-content: start; }
+.kpi .v { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kpi .l { color: var(--ink-2); font-size: 0.92rem; }
+ol.method { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 10px; }
+ol.method li { counter-increment: s; display: grid; grid-template-columns: 2.2em 1fr; gap: 8px; align-items: baseline; }
+ol.method li::before { content: counter(s); font-family: var(--font-mono); color: var(--accent); font-weight: 500; }
+ol.method b { font-weight: 600; }
+figure { margin: 6px 0 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 18px 12px; display: grid; gap: 10px; min-width: 0; }
+figcaption { display: grid; gap: 2px; }
+figcaption .t { font-weight: 600; }
+figcaption .s { color: var(--ink-3); font-size: 0.85rem; }
+.chart { position: relative; width: 100%; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--font-body); fill: var(--ink-2); font-size: 12px; }
+.chart .val { fill: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .axis { stroke: var(--ink-3); stroke-width: 1; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 0.8rem; line-height: 1.35;
+  padding: 6px 9px; border-radius: 4px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); z-index: 2;
+}
+details { font-size: 0.88rem; color: var(--ink-2); }
+details summary { cursor: pointer; color: var(--ink-3); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; color: var(--ink-2); font-size: 0.82rem; }
+td.n { text-align: right; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.card .tag { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.gamecard { background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; padding: 18px 18px 10px; display: grid; gap: 0; }
+.gamecard .row { display: grid; grid-template-columns: 9.5em 1fr; gap: 12px; padding-block: 10px; border-bottom: 1px dashed var(--rule); }
+.gamecard .row:last-child { border-bottom: 0; }
+.gamecard .k { font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); padding-top: 3px; }
+.note { font-size: 0.9rem; color: var(--ink-2); }
+ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 68ch; }
+.term { background: var(--ink); color: var(--bg); border-radius: 6px; padding: 12px 14px; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; white-space: pre; margin: 0; min-width: 0; }
+.term .c { opacity: 0.6; }
+.term .p { color: var(--thin); }
+.ask { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; display: grid; gap: 2px; }
+.ask .q { font-size: 1.05rem; font-weight: 500; }
+.ask .tr { font-size: 0.85rem; color: var(--ink-3); }
+.steps-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.steps-nav a { font-family: var(--font-mono); font-size: 0.78rem; text-decoration: none; color: var(--ink-2); border: 1px solid var(--rule); border-radius: 999px; padding: 4px 10px; background: var(--surface); }
+.steps-nav a:hover { border-color: var(--accent); color: var(--accent); }
+.step-h { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: baseline; }
+.step-n { font-family: var(--font-mono); font-size: 0.85rem; color: var(--surface); background: var(--accent); border-radius: 4px; padding: 2px 8px; font-weight: 500; }
+.sources td:first-child { font-weight: 600; }
+.yes { color: var(--accent); font-weight: 600; } .no { color: var(--thin); font-weight: 600; }
+footer { padding-block: 32px 0; border-top: 1px solid var(--rule); color: var(--ink-3); font-size: 0.85rem; display: grid; gap: 8px; }
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .gamecard .row { grid-template-columns: 1fr; gap: 2px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bar { transition: opacity .15s; }
+}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Case study · io-gametheory skill</div>
+  <h1>Bidding for Argentina's Medicines</h1>
+  <p class="dek">A walkthrough of an analysis run with an open-source game-theory skill, step by step: the questions we typed, the data it went after, the games it wrote down, the code it ran and the objections that changed its mind. The answer: no cartel, but drug tenders with almost no competition, and a Ministry of Health that has mostly stopped tendering.</p>
+  <div class="stamp"><b>Licitación Pública 80-0006-LPU23</b><span>Oncology drugs</span><span>12 suppliers took part</span><span>31 items · 37 bids</span></div>
+  <nav class="steps-nav" aria-label="Steps">
+    <a href="#s1">1 Frame</a><a href="#s2">2 Data</a><a href="#s3">3 Write the game</a><a href="#s4">4 Solve with code</a><a href="#s5">5 What flips it</a><a href="#s6">6 Referee</a><a href="#s7">7 Explain</a>
+  </nav>
+</header>
+
+<section>
+  <div class="eyebrow">How to read this page</div>
+  <p>The skill applies the same seven steps to every question. Each section below is one step, in the order they ran. Commands are the skill's own scripts; outputs are real and trimmed for length. Questions were asked in Spanish; translations are below each one.</p>
+</section>
+
+<section id="s1">
+  <div class="step-h"><span class="step-n">STEP 1</span><h2>Frame the question</h2></div>
+  <div class="ask"><span class="q">"Corré la skill sobre las licitaciones de laboratorios en Argentina."</span><span class="tr">"Run the skill on drug-laboratory tenders in Argentina."</span></div>
+  <p>The skill turned that into a decision question before touching any data:</p>
+  <ul class="plain">
+    <li><b>Who decides:</b> the Ministry of Health and other federal buyers; laboratories and distributors that bid.</li>
+    <li><b>Positive question:</b> are drug prices set by competition, and if not, by what?</li>
+    <li><b>Compared to what:</b> the same items with more bidders, and the same drugs bought under a credible alternative (importing, pooled purchasing).</li>
+  </ul>
+</section>
+
+<section id="s2">
+  <div class="step-h"><span class="step-n">STEP 2</span><h2>Get the data, and notice what is missing</h2></div>
+  <p>The skill's rule is that every dataset must change a number in the game. It checked three public sources:</p>
+  <div class="tbl"><table class="sources">
+    <thead><tr><th>Source</th><th>Winners</th><th>Every bid</th><th>What it adds</th></tr></thead>
+    <tbody>
+      <tr><td>Court-ordered purchase tables (Ministry of Health)</td><td class="yes">yes</td><td class="yes">yes</td><td>425 comparable items, 1,900 bids, Oct 2024 – Oct 2026</td></tr>
+      <tr><td>COMPR.AR purchase orders</td><td class="yes">yes</td><td class="no">no</td><td>5,415 orders 2017–2026: who won and how (tender or direct award)</td></tr>
+      <tr><td>COMPR.AR open data (datos.gob.ar)</td><td class="yes">yes</td><td class="no">no</td><td>Calls and awards; still no losing bids</td></tr>
+      <tr><td>COMPR.AR comparison tables (scraped)</td><td class="yes">yes</td><td class="yes">yes</td><td>Every bid per item (drugs and medical supplies), bidder tax ID, unit price, made-in-Argentina flag</td></tr>
+    </tbody>
+  </table></div>
+  <p>Without losing bids there is no way to measure competition, so the skill flagged the gap and we wrote a polite scraper for the comparison table that COMPR.AR shows on each tender's page (two seconds between requests, raw pages cached).</p>
+  <div class="term"><span class="c">$</span> uv run scraper.py --lista procesos_farma.txt
+1301 procesos, 1301 pendientes
+[1/1301] 80-0005-LPR25: ok - 1 renglones, 3 ofertas (9s)
+[5/1301] 80-0013-LPU25: ok - 45 renglones, 93 ofertas (15s)
+<span class="c">…</span></div>
+  <div class="kpis" id="kpis"></div>
+</section>
+
+<section id="s3">
+  <div class="step-h"><span class="step-n">STEP 3</span><h2>Write the game down</h2></div>
+  <p>The data showed two different ways the State buys medicines, so the skill wrote two games.</p>
+  <div class="two">
+    <div class="card"><span class="tag">Game A · tenders</span><h3>A procurement auction</h3><p class="note"><b>Players:</b> the bidders on each drug item. <b>Action:</b> a sealed price. <b>Information:</b> each knows its own cost, not the others'. <b>Payoff:</b> price minus cost if it wins, zero otherwise. <b>Prediction:</b> bidders shade their price above cost, and the shading shrinks as more bidders show up.</p></div>
+    <div class="card"><span class="tag">Game B · direct awards</span><h3>Bargaining with a monopolist</h3><p class="note"><b>Players:</b> the Ministry and the patent holder. <b>Action:</b> offers and counteroffers. <b>At stake:</b> what the treatment is worth to the State minus what it costs to make. <b>Prediction:</b> the price lands between the two, capped by the State's best credible alternative.</p></div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="step-h"><span class="step-n">STEP 4</span><h2>Solve it with code</h2></div>
+  <h3>Game A: how much competition is there?</h3>
+  <p>First the simplest count: how many bids each item received.</p>
+  <figure class="wide">
+    <figcaption><span class="t">How many bids each item received</span><span class="s" id="s-dist"></span></figcaption>
+    <div class="chart" id="c-dist" role="img" aria-label="Bar chart of items by number of bids received."></div>
+    <details><summary>Table view</summary><div class="tbl" id="t-dist"></div></details>
+  </figure>
+  <p>Then the auction model: from observed bids, the skill recovers each bidder's implied cost and markup (Guerre-Perrigne-Vuong). If competition works, markups fall as bidders are added.</p>
+  <div class="term" id="term-gpv"></div>
+  <p>The same pattern shows up without any model, in the court-ordered purchases: the cushion between the winner and the runner-up.</p>
+  <figure class="wide">
+    <figcaption><span class="t">How far the winning bid sits below the runner-up</span><span class="s">Median gap between the lowest and second-lowest bid, by number of bidders. Court-ordered drug purchases, Ministry of Health, Oct 2024 – Oct 2026 (425 items).</span></figcaption>
+    <div class="chart" id="c-manda" role="img" aria-label="Bar chart: median gap 16.3% with 2 bidders, 6.9% with 3, 5.1% with 4 to 5, 3.5% with 6 or more."></div>
+    <details><summary>Table view</summary><div class="tbl" id="t-manda"></div></details>
+  </figure>
+  <h3>Game A: is anyone colluding?</h3>
+  <p>Bid-rigging screens look for groups of firms that always bid together and take turns winning, cover bids clustered above the winner, and firms that bid but never win.</p>
+  <div class="term" id="term-bids"></div>
+  <h3>Game B: how often does the Ministry skip the auction?</h3>
+  <p>From purchase orders, the share of Ministry of Health drug spending awarded without a tender, measured within each year so inflation does not distort it.</p>
+  <figure class="wide">
+    <figcaption><span class="t">Share of Ministry of Health drug spending awarded by direct contracting</span><span class="s">Percent of each year's spending in pesos. Suppliers with the exclusive rubro "PROD. MEDICO/FARMACEUTICOS/LAB".</span></figcaption>
+    <div class="chart" id="c-direct" role="img" aria-label="Line chart of direct contracting share: 2019 36%, 2020 51%, 2021 54%, 2022 68%, 2023 72%, 2024 50%, 2025 80%."></div>
+    <details><summary>Table view</summary><div class="tbl" id="t-direct"></div></details>
+  </figure>
+  <div class="term"><span class="c">$</span> uv run merger.py hhi --shares minsalud_tendered_2023_25.csv
+- Firms: 41; CR4 = 76.8%; effective number of equal-sized firms 1/HHI = 2.9
+- HHI = <span class="p">3,403</span> (highly concentrated; no merger specified)
+
+<span class="c">$</span> uv run merger.py hhi --shares minsalud_direct_2023_25.csv
+- Firms: 37; CR4 = 46.9%
+- HHI = 820 (unconcentrated)  <span class="c"># sellers are many patent holders, each a monopolist on its own drug</span></div>
+</section>
+
+<section id="s5">
+  <div class="step-h"><span class="step-n">STEP 5</span><h2>Find what would flip the answer</h2></div>
+  <ul class="plain">
+    <li><b>The third bidder.</b> The cushion and the markup fall sharply between two and four bidders. Recruiting one more firm beats any reserve-price tweak (Bulow-Klemperer), and <span id="share-all">a third</span> of all items (<span id="share-ms">most</span> of the Ministry of Health's) never reach two bids.</li>
+    <li><b>A credible outside option.</b> In direct deals the price is capped by the State's best alternative. If importing costs about 15% over the international reference price, any price above roughly 1.15× means that alternative was not on the table. An earlier comparison of 16 purchases found 1.13× for pembrolizumab and 2.1× for nivolumab bought through a distributor.</li>
+    <li><b>Could the tendered market sustain a cartel?</b> With about two effective firms and monthly purchases, yes, even if cheating were noticed a year late:</li>
+  </ul>
+  <div class="term"><span class="c">$</span> uv run collusion.py sustain --model bertrand --n 2 --lag 12
+- Critical discount factor δ* = <span class="p">0.500</span> (closed form 0.500 = 1 − 1/n)
+| detection lag | δ*    | longest gap between interactions that sustains collusion |
+| 1             | 0.500 | 1672 days (55.0 months) |
+| 12            | 0.944 | 139 days (4.6 months)   |</div>
+  <p class="note">The structure allows collusion. Step 4 found no sign of it.</p>
+</section>
+
+<section id="s6">
+  <div class="step-h"><span class="step-n">STEP 6</span><h2>Referee: the objections that changed the result</h2></div>
+  <p>The skill must raise the strongest objections to its own findings. Here they removed three false alarms and one data error.</p>
+  <div class="two">
+    <div class="card"><span class="tag">Flag</span><h3>"A cover bidder"</h3><p class="note">In court-ordered purchases, one firm lost all 8 cochlear-implant items where it met another, always 67–153% dearer.</p><span class="tag">After checking</span><p class="note">Two brands, MED-EL and Cochlear, the world duopoly in hearing implants. A patient fitted with one brand needs compatible parts. Competition between brands, not a cover bid.</p></div>
+    <div class="card"><span class="tag">Flag</span><h3>"Bids clustered by design"</h3><p class="note">Losing bids within 1–3% of the winner, the same trio repeatedly.</p><span class="tag">After checking</span><p class="note">Distributors reselling one single-source drug bought from the same laboratory: a common cost. The pricing power is upstream.</p></div>
+    <div class="card"><span class="tag">Flag</span><h3>"Firms that never win"</h3><p class="note">Bidders with many bids and not a single win.</p><span class="tag">After checking</span><p class="note">They bid in only one or two tenders: their bids were items of the same tender, so they were not independent tries.</p></div>
+    <div class="card"><span class="tag">Flag</span><h3>"Two firms taking turns"</h3><p class="note">A pair of suppliers alternated wins on 22 items; five other "groups" always bid together.</p><span class="tag">After checking</span><p class="note">Each group met in only one to three tenders: the "rounds" were items of the same tender, split by specialty (stents, surgical instruments). One tender is one interaction, not repeated play. The screen now counts tenders, not items.</p></div>
+    <div class="card"><span class="tag">Flag</span><h3>"A bidder 58 times cheaper"</h3><p class="note">One distributor appeared to win an item at a fraction of everyone else's price.</p><span class="tag">After checking</span><p class="note">It quoted per capsule while the others quoted per box. Comparing totals fixed the "probable winner" in 35 items.</p></div>
+  </div>
+  <ul class="plain">
+    <li><b>"Winner" is the lowest bid,</b> not the formal award, which can differ when a bid fails technical requirements.</li>
+    <li><b>Concentration counts firms by tax ID;</b> corporate groups would make it higher.</li>
+    <li><b>Items whose bids differ more than fivefold are dropped</b> as incomparable units.</li>
+  </ul>
+</section>
+
+<section id="s7">
+  <div class="step-h"><span class="step-n">STEP 7</span><h2>Explain it: the game card</h2></div>
+  <div class="gamecard">
+    <div class="row"><span class="k">Story</span><p>The State buys medicines two ways. When it tenders, few firms show up, and with two bidders the winner keeps a fat cushion. When it buys directly from a patent holder, it haggles with a monopolist, often against a court deadline.</p></div>
+    <div class="row"><span class="k">Players</span><p>Ministry of Health; laboratories and distributors in tenders; patent holders in direct deals.</p></div>
+    <div class="row"><span class="k">Why it is stable</span><p>A bidder facing one rival has no reason to cut its price further: the extra chance of winning is not worth the lost margin. A monopolist has no reason to cut its price below what the State's alternative would cost.</p></div>
+    <div class="row"><span class="k">Counterintuitive</span><p>No cartel is needed for prices to be high. And an alternative the State never uses still sets the price, but only if the seller believes it is real. A court deadline makes it unbelievable.</p></div>
+    <div class="row"><span class="k">What to do</span><p>Recruit the third bidder; make the outside option credible (reference prices, pooled purchases, technology assessment); publish losing bids as open data so anyone can measure competition.</p></div>
+  </div>
+</section>
+
+<footer>
+  <div>Sources: Ministry of Health court-order purchase tables (argentina.gob.ar/salud/manda-judicial); COMPR.AR purchase orders and comparison tables (comprar.gob.ar); COMPR.AR open data (datos.gob.ar). Data collected <span id="asof">November 2026</span>. Screens are statistical red flags, not evidence of wrongdoing.</div>
+  <div>Analysis: <a href="https://github.com/micaelarg/io-gametheory">io-gametheory</a>, an open-source agent skill for applied industrial organization and game theory (MIT license).</div>
+</footer>
+</div>
+
+<script>
+const DATA = {"procesos_bajados": 273, "procesos_ok": 273, "procesos_sin_cuadro": 0, "renglones": 4987, "ofertas": 13049, "oferentes": 315, "participantes_mediana": 6.0, "share_desierto": 0.14537798275516342, "share_una_oferta": 0.21475837176659315, "share_2mas": 0.6398636454782435, "dist_n": {"0": 725, "1": 1071, "2": 1013, "3": 838, "4": 477, "5": 346, "6+": 517}, "lead_by_n": {"2": {"median_pct": 39.4, "items": 935}, "3": {"median_pct": 22.6, "items": 710}, "4-5": {"median_pct": 15.4, "items": 640}, "6+": {"median_pct": 11.9, "items": 336}}, "procesos_ms": 133, "ms_renglones": 1204, "ms_share_desierto_o_una": 0.5880398671096345, "ms_share_una_o_ninguna": 0.5880398671096345, "years": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "asof": "November 2026", "term_gpv": "<span class=\"c\">$</span> uv run auctions.py gpv --bids panel_bids.csv --bid-col norm --procurement\n| bidders | bids | median markup over implied cost |\n| 2       | 1808 | <span class=\"p\">41.9%</span> |\n| 3       | 2022 | 13.8% |\n| 4       | 1482 | 11.7% |\n| 5       | 1186 | 8.6% |\n| 6       | 866  | 7.4% |\n| 7       | 647  | 5.3% |\n| 8       | 272  | 6.1% |\n| …       |      | (larger auctions: 4–6%) |\n- Markups fall with the number of bidders: what competitive theory predicts.", "term_bids": "<span class=\"c\">$</span> uv run collusion.py bids --data panel_bids.csv --process-col process --min-meet 8\n- Groups of bidders that bid together (Jaccard ≥ 0.6, ≥ 8 joint tenders): 5\n  5 of them meet in fewer than 3 tenders: items of one tender, not repeated play   <span class=\"c\"># see step 6</span>\n- Rotation patterns across repeated tenders: 0\n- Bidders that bid ≥ 8 times and never win: 7   <span class=\"c\"># see step 6</span>\n- ⚠ Per-tender CV/RD flags are noisy: trust patterns that repeat across tenders and bidders."};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (v, d = 1) => (v == null ? "–" : Number(v).toLocaleString("en-US", { maximumFractionDigits: d }));
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+
+function tipFor(box) { let t = box.querySelector(".tip"); if (!t) { t = document.createElement("div"); t.className = "tip"; t.hidden = true; box.appendChild(t); } return t; }
+
+function barChart(id, rows, opt) {
+  const box = document.getElementById(id); if (!box) return;
+  box.innerHTML = "";
+  const W = 640, H = 250, m = { t: 22, r: 8, b: 40, l: 8 };
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}` }, box);
+  const max = opt.max || Math.max(...rows.map(r => r.v)) * 1.15;
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, bw = iw / rows.length, gap = Math.min(28, bw * 0.28);
+  const y = v => m.t + ih - (v / max) * ih;
+  el("line", { x1: m.l, x2: W - m.r, y1: m.t + ih, y2: m.t + ih, class: "axis" }, svg);
+  const tip = tipFor(box);
+  rows.forEach((r, i) => {
+    const x = m.l + i * bw + gap / 2, w = bw - gap, h = Math.max(0, m.t + ih - y(r.v));
+    const color = r.hi ? css("--thin") : css("--accent");
+    const rr = Math.min(4, w / 2, h);
+    const p = `M${x},${m.t + ih} V${y(r.v) + rr} Q${x},${y(r.v)} ${x + rr},${y(r.v)} H${x + w - rr} Q${x + w},${y(r.v)} ${x + w},${y(r.v) + rr} V${m.t + ih} Z`;
+    el("path", { d: h > 0 ? p : "", fill: color, class: "bar" }, svg);
+    const tv = el("text", { x: x + w / 2, y: y(r.v) - 6, "text-anchor": "middle", class: "val" }, svg); tv.textContent = opt.label(r.v);
+    const tl = el("text", { x: x + w / 2, y: m.t + ih + 18, "text-anchor": "middle" }, svg); tl.textContent = r.k;
+    const hit = el("rect", { x: m.l + i * bw, y: m.t, width: bw, height: ih + 24, fill: "transparent" }, svg);
+    const show = () => { tip.hidden = false; tip.textContent = opt.tip(r); const bb = box.getBoundingClientRect(), sb = svg.getBoundingClientRect(); tip.style.left = ((x + w / 2) / W * sb.width + sb.left - bb.left) + "px"; tip.style.top = (y(r.v) / H * sb.height + sb.top - bb.top) + "px"; svg.querySelectorAll(".bar").forEach((b, j) => b.style.opacity = j === i ? 1 : 0.45); };
+    const hide = () => { tip.hidden = true; svg.querySelectorAll(".bar").forEach(b => b.style.opacity = 1); };
+    hit.addEventListener("mouseenter", show); hit.addEventListener("mouseleave", hide);
+    hit.addEventListener("touchstart", show, { passive: true });
+  });
+  const xl = el("text", { x: W / 2, y: H - 4, "text-anchor": "middle" }, svg); xl.textContent = opt.xlabel;
+}
+
+function lineChart(id, rows, opt) {
+  const box = document.getElementById(id); if (!box) return;
+  box.innerHTML = "";
+  const W = 640, H = 250, m = { t: 22, r: 26, b: 34, l: 36 };
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}` }, box);
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const x = i => m.l + (i / (rows.length - 1)) * iw, y = v => m.t + ih - (v / 100) * ih;
+  [0, 25, 50, 75, 100].forEach(g => { el("line", { x1: m.l, x2: W - m.r, y1: y(g), y2: y(g), class: "grid" }, svg); const t = el("text", { x: m.l - 6, y: y(g) + 4, "text-anchor": "end" }, svg); t.textContent = g + "%"; });
+  const acc = css("--accent");
+  el("path", { d: rows.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r.v)}`).join(" ") + ` L${x(rows.length - 1)},${y(0)} L${x(0)},${y(0)} Z`, fill: acc, opacity: 0.1 }, svg);
+  el("path", { d: rows.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r.v)}`).join(" "), fill: "none", stroke: acc, "stroke-width": 2 }, svg);
+  rows.forEach((r, i) => { const t = el("text", { x: x(i), y: H - 10, "text-anchor": "middle" }, svg); t.textContent = r.k; });
+  const last = rows.length - 1, first = 0;
+  [first, last].forEach(i => { el("circle", { cx: x(i), cy: y(rows[i].v), r: 4.5, fill: acc, stroke: css("--surface"), "stroke-width": 2 }, svg); const t = el("text", { x: x(i), y: y(rows[i].v) - 10, "text-anchor": "middle", class: "val" }, svg); t.textContent = rows[i].v + "%"; });
+  const tip = tipFor(box);
+  const cross = el("line", { y1: m.t, y2: m.t + ih, stroke: css("--ink-3"), "stroke-width": 1, visibility: "hidden" }, svg);
+  const dot = el("circle", { r: 5, fill: acc, stroke: css("--surface"), "stroke-width": 2, visibility: "hidden" }, svg);
+  const hit = el("rect", { x: m.l - 10, y: m.t, width: iw + 20, height: ih, fill: "transparent" }, svg);
+  const move = ev => { const sb = svg.getBoundingClientRect(), bb = box.getBoundingClientRect(); const px = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - sb.left) / sb.width * W; const i = Math.max(0, Math.min(last, Math.round((px - m.l) / iw * last))); const r = rows[i];
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible"); dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(r.v)); dot.setAttribute("visibility", "visible");
+    tip.hidden = false; tip.textContent = opt.tip(r); tip.style.left = (x(i) / W * sb.width + sb.left - bb.left) + "px"; tip.style.top = (y(r.v) / H * sb.height + sb.top - bb.top) + "px"; };
+  hit.addEventListener("mousemove", move); hit.addEventListener("touchstart", move, { passive: true });
+  hit.addEventListener("mouseleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); });
+}
+
+function table(id, head, rows) {
+  const t = document.getElementById(id); if (!t) return;
+  t.innerHTML = `<table><thead><tr>${head.map((h, i) => `<th${i ? ' class="n"' : ""}>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td${i ? ' class="n"' : ""}>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+}
+
+function render() {
+  const manda = [{ k: "2", v: 16.3, n: 108 }, { k: "3", v: 6.9, n: 78 }, { k: "4–5", v: 5.1, n: 119 }, { k: "6+", v: 3.5, n: 120 }];
+  barChart("c-manda", manda.map(r => ({ ...r, hi: r.k === "2" })), { label: v => v + "%", xlabel: "Bidders in the item", tip: r => `${r.k} bidders · ${r.n} items · median gap ${r.v}%` });
+  table("t-manda", ["Bidders", "Items", "Median gap"], manda.map(r => [r.k, r.n, r.v + "%"]));
+
+  const direct = [[2019, 36], [2020, 51], [2021, 54], [2022, 68], [2023, 72], [2024, 50], [2025, 80]].map(([k, v]) => ({ k: String(k), v }));
+  lineChart("c-direct", direct, { tip: r => `${r.k}: ${r.v}% of spending awarded directly` });
+  table("t-direct", ["Year", "Direct contracting share"], direct.map(r => [r.k, r.v + "%"]));
+
+  const D = DATA;
+  if (!D.renglones) { document.getElementById("kpis").innerHTML = '<p class="note">Bid-level data loading.</p>'; return; }
+  document.getElementById("kpis").innerHTML = [
+    [fmt(D.procesos_ok, 0), "tenders scraped so far"], [fmt(D.renglones, 0), "items (drugs and supplies)"], [fmt(D.ofertas, 0), "bids"],
+    [Math.round(100 * (D.share_desierto + D.share_una_oferta)) + "%", "of items got one bid or none"]
+  ].map(([v, l], i) => `<div class="kpi"><span class="v"${i === 3 ? ' style="color:var(--thin)"' : ""}>${v}</span><span class="l">${l}</span></div>`).join("");
+  const order = ["0", "1", "2", "3", "4", "5", "6+"];
+  const dist = order.filter(k => D.dist_n[k] != null).map(k => ({ k, v: D.dist_n[k], hi: k === "0" || k === "1" }));
+  const tot = dist.reduce((a, r) => a + r.v, 0);
+  document.getElementById("s-dist").textContent = `Items (one product and presentation each: drugs and medical supplies) by number of bids received. ${fmt(D.renglones, 0)} items in ${fmt(D.procesos_ok, 0)} federal tenders (${fmt(D.procesos_ms, 0)} of them by the Ministry of Health), ${D.years[0]}–${D.years[D.years.length - 1]}. Orange: no competition.`;
+  barChart("c-dist", dist, { label: v => fmt(v, 0), xlabel: "Bids received", tip: r => `${r.k} bid${r.k === "1" ? "" : "s"}: ${fmt(r.v, 0)} items (${Math.round(100 * r.v / tot)}%)` });
+  table("t-dist", ["Bids received", "Items", "Share"], dist.map(r => [r.k, fmt(r.v, 0), Math.round(100 * r.v / tot) + "%"]));
+  const sa = document.getElementById("share-all"), sm = document.getElementById("share-ms");
+  if (sa) sa.textContent = Math.round(100 * (D.share_desierto + D.share_una_oferta)) + "%";
+  if (sm && D.ms_share_desierto_o_una != null) sm.textContent = Math.round(100 * D.ms_share_desierto_o_una) + "%";
+  if (D.term_gpv) document.getElementById("term-gpv").innerHTML = D.term_gpv;
+  if (D.term_bids) document.getElementById("term-bids").innerHTML = D.term_bids;
+  if (D.asof) document.getElementById("asof").textContent = D.asof;
+}
+render();
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
+
+</body>
+</html>

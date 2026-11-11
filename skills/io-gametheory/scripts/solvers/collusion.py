@@ -21,7 +21,9 @@ SUBCOMMANDS
 FLAGS BY SUBCOMMAND
   sustain: --model bertrand|cournot|custom --n [--pi-c --pi-d --pi-n] --rate --survival [--lag]
   prices:  --data --date-col --firm-col --price-col [--cost-col] --window --lag --tol
-  bids:    --data --tender-col --bidder-col --bid-col [--estimate-col] --cv-thr --min-meet --jaccard [--out]
+  bids:    --data --tender-col --bidder-col --bid-col [--estimate-col --process-col --min-procs] --cv-thr --min-meet --jaccard [--out]
+           When tenders are split into items (lots), pass the item as --tender-col and the procedure as --process-col:
+           co-bidding across items of ONE procedure is a single interaction and is not read as rotation.
 
 Screens are RED FLAGS for further investigation, never proof. Collusion is illegal in nearly every
 jurisdiction; report findings as statistical anomalies with their innocent explanations.
@@ -322,9 +324,15 @@ def cmd_bids(a):
         counts = w[inside].value_counts().reindex(G, fill_value=0)
         pshare = counts / max(counts.sum(), 1)
         ent = -(pshare[pshare > 0] * np.log(pshare[pshare > 0])).sum() / np.log(len(G)) if len(G) > 1 else 0
-        flagged.append((G, len(ts), inside.mean(), ent, counts.to_dict()))
+        flagged.append((G, len(ts), inside.mean(), ent, counts.to_dict(), list(ts)))
     L.append(f"- Groups of bidders that bid together (Jaccard ≥ {a.jaccard}, ≥ {a.min_meet} joint tenders): {len(flagged)}")
-    for G, nt, wr, ent, cnt in sorted(flagged, key=lambda x: -x[2]):
+    for G, nt, wr, ent, cnt, ts in sorted(flagged, key=lambda x: -x[2]):
+        if a.process_col:
+            nproc = df[df.tender.isin(ts)][a.process_col].nunique()
+            if nproc < a.min_procs:
+                L.append(f"  - {', '.join(map(str, G))}: {nt} joint items but only **{nproc} tender(s)** - items of the same tender are "
+                         "one interaction, not repeated play (firms often split items by specialty). Not a rotation signal.")
+                continue
         rot = wr > 0.8 and ent > 0.8
         if wr > 0.8:
             ordered = [winners.get(t) for t in sorted(ts)]
@@ -392,6 +400,8 @@ def main():
     ap.add_argument("--bid-col", default="bid"); ap.add_argument("--estimate-col")
     ap.add_argument("--cv-thr", type=float, default=0.03); ap.add_argument("--min-meet", type=int, default=5)
     ap.add_argument("--jaccard", type=float, default=0.6, help="co-bidding similarity to group bidders")
+    ap.add_argument("--process-col", help="bids: column with the tender/procedure id when each row's tender is an ITEM (lot) of it")
+    ap.add_argument("--min-procs", type=int, default=3, help="bids: minimum distinct procedures for a group to count as repeated play")
     ap.add_argument("--out")
     a = ap.parse_args()
     {"sustain": cmd_sustain, "prices": cmd_prices, "bids": cmd_bids}[a.cmd](a)

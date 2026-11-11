@@ -22,6 +22,13 @@ A language model already knows the theory. What it lacks is discipline. This ski
 
 Every solver was tested against closed-form results from the literature (Cournot, Stackelberg, Rubinstein, Myerson, Griesmer/Plum asymmetric auctions, d'Aspremont-Gabszewicz-Thisse, Salop, Hillman-Riley all-pay, Chatterjee-Samuelson, Kimura) and the skill was evaluated on 23 realistic prompts.
 
+## Case study: bidding for Argentina's medicines
+
+The skill applied, step by step, to Argentina's federal purchases of drugs and medical supplies: from the question to the data (including a scraper for every losing bid), the games, the code, the objections that removed five false alarms, and the game card. No cartel; the expensive problems are tenders with one or two bidders and a Ministry of Health that awards most of its drug spending without competition.
+
+- **Web page:** https://micaelarg.github.io/io-gametheory/
+- **Text, data and code:** [`examples/argentina-drug-procurement`](examples/argentina-drug-procurement)
+
 ## Where game theory helps: questions people actually ask
 
 Game theory is useful whenever **your best move depends on what someone else will do**. Some examples, grouped by situation, with what the skill does with each:
