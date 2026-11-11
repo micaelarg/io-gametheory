@@ -24,7 +24,7 @@ Every solver was tested against closed-form results from the literature (Cournot
 
 ## Case study: bidding for Argentina's medicines
 
-The skill applied, step by step, to Argentina's federal purchases of drugs and medical supplies: from the question to the data (including a scraper for every losing bid), the games, the code, the objections that removed five false alarms, and the game card. No cartel; the expensive problems are tenders with one or two bidders and a Ministry of Health that awards most of its drug spending without competition.
+The skill applied, step by step, to Argentina's federal purchases of drugs and medical supplies: from the question to the data (including a scraper for every losing bid), the games, the code, the objections that removed the false alarms (and left one pattern to watch), and the game card. No sign of a cartel; the expensive problems are tenders with one or two bidders and a Ministry of Health that awards most of its drug spending without competition.
 
 - **Web page:** https://micaelarg.github.io/io-gametheory/
 - **Text, data and code:** [`examples/argentina-drug-procurement`](examples/argentina-drug-procurement)

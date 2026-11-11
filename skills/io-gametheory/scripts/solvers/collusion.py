@@ -334,6 +334,28 @@ def cmd_bids(a):
                          "one interaction, not repeated play (firms often split items by specialty). Not a rotation signal.")
                 continue
         rot = wr > 0.8 and ent > 0.8
+        pextra = ""
+        if a.process_col and wr > 0.8:
+            sub = df[df.tender.isin(ts) & (df["rank"] == 1)]
+            tab = sub.assign(who=sub.bidder.where(sub.bidder.isin(G), "other")).groupby(a.process_col).who.value_counts().unstack(fill_value=0)
+            nproc = len(tab)
+            mem = tab[[g for g in G if g in tab.columns]]
+            shared = int(((mem > 0).sum(axis=1) >= 2).sum())
+            top = mem.idxmax(axis=1)
+            switches = int((top != top.shift()).sum() - 1)
+            rows = "; ".join(f"{pid}: " + ", ".join(f"{k} {v}" for k, v in r.items() if v) for pid, r in tab.iterrows())
+            pextra = f"\n    - {nt} items in {nproc} tenders. Item wins per tender: {rows}"
+            if shared >= nproc / 2:
+                pextra += (f"\n    - In {shared} of {nproc} tenders several members win items of the SAME tender: they split by product, "
+                           "not by turns. Consistent with specialization (brands, compatible parts) or with a market split by product; "
+                           "check which products each wins and whether that is stable.")
+                rot = False
+            elif switches <= 1:
+                pextra += ("\n    - The tender-level winner changes at most once (ordered by tender id): looks like a share shift "
+                           "(entry, exit, new distributor), not alternation.")
+                rot = False
+            else:
+                pextra += f"\n    - The tender-level winner changes {switches} times across {nproc} tenders: alternation by tender. ⚠"
         if wr > 0.8:
             ordered = [winners.get(t) for t in sorted(ts)]
             seq = " → ".join(str(x) for x in ordered[:12]) + (" …" if len(ordered) > 12 else "")
@@ -346,15 +368,17 @@ def cmd_bids(a):
                           f"implied overcharge ≈ {100*(wrel/orel-1):.1f}% ≈ {fmt(wsum*(wrel-orel))} on these tenders "
                           "(assumes other tenders are a valid competitive benchmark)")
             outs = df[df.tender.isin(ts) & ~df.bidder.isin(G)]
+            owins = int((outs["rank"] == 1).sum())
             if len(outs):
-                extra += (f"\n    - outside firms bid in {outs.tender.nunique()} of these tenders and never won"
+                extra += (f"\n    - outside firms bid in {outs.tender.nunique()} of these tenders and "
+                          + (f"won {owins}" if owins else "never won")
                           + (f"; their bids / estimate median {outs.rel.median():.3f}" if a.estimate_col else "")
-                          + " - possible cover bids (or genuinely uncompetitive firms)")
+                          + ("" if owins else " - possible cover bids (or genuinely uncompetitive firms)"))
         else:
             extra = ""
-        L.append(f"  - {', '.join(map(str, G))}: {nt} joint tenders, group wins {100*wr:.0f}%, "
+        L.append(f"  - {', '.join(map(str, G))}: {nt} joint {'items' if a.process_col else 'tenders'}, group wins {100*wr:.0f}%, "
                  f"evenness of wins (entropy, 1 = equal) {abs(ent):.2f}: {cnt}" + (" ⚠ **bid-rotation pattern**" if rot else
-                    " → one member always wins: check whether the others are cover bidders or sell a different (dearer) product" if wr > 0.8 and ent < 0.3 else "") + extra)
+                    " → one member always wins: check whether the others are cover bidders or sell a different (dearer) product" if wr > 0.8 and ent < 0.3 else "") + pextra + extra)
     # 3. bidder level
     bl = df.groupby("bidder").agg(bids=("bid", "size"), wins=("rank", lambda s: (s == 1).sum()), rel=("rel", "median"))
     never = bl[(bl.bids >= a.min_meet) & (bl.wins == 0)]

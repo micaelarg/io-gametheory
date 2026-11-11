@@ -2,7 +2,7 @@
 
 **Read it as a web page:** https://micaelarg.github.io/io-gametheory/
 
-A walkthrough of an analysis run with the `io-gametheory` skill on Argentina's federal purchases of drugs and medical supplies, following the skill's seven steps. Numbers below are a snapshot of 273 scraped tenders (133 of them by the Ministry of Health, 2017–2026). Scraping of the full list (1,301 tenders) is in progress and this page will be updated.
+A walkthrough of an analysis run with the `io-gametheory` skill on Argentina's federal purchases of drugs and medical supplies, following the skill's seven steps. Numbers below come from 1,300 scraped tenders (133 of them by the Ministry of Health, 2016–2026): every competitive tender won by suppliers registered under COMPR.AR's medical/pharmaceutical category, which mixes drugs with medical supplies and devices.
 
 ## 1. Frame
 
@@ -31,19 +31,19 @@ The open data has no losing bids, so a scraper was written for the comparison ta
 
 ## 4. Solve with code
 
-**How many bids each item received** (4,987 items):
+**How many bids each item received** (37,963 items):
 
 | bids received | items | share |
 |---|---|---|
-| 0 | 725 | 15% |
-| 1 | 1,071 | 21% |
-| 2 | 1,013 | 20% |
-| 3 | 838 | 17% |
-| 4 | 477 | 10% |
-| 5 | 346 | 7% |
-| 6+ | 517 | 10% |
+| 0 | 7,949 | 21% |
+| 1 | 9,463 | 25% |
+| 2 | 7,531 | 20% |
+| 3 | 5,134 | 14% |
+| 4 | 3,035 | 8% |
+| 5 | 1,766 | 5% |
+| 6+ | 3,085 | 8% |
 
-36% of all items, and 59% of the Ministry of Health's, got one bid or none.
+46% of all items, and 59% of the Ministry of Health's, got one bid or none.
 
 **Markups recovered from bids** (Guerre-Perrigne-Vuong, bids normalized by the item's median):
 
@@ -53,15 +53,15 @@ uv run skills/io-gametheory/scripts/solvers/auctions.py gpv --bids panel_bids.cs
 
 | bidders | bids | median markup over implied cost |
 |---|---|---|
-| 2 | 1,808 | 41.9% |
-| 3 | 2,022 | 13.8% |
-| 4 | 1,482 | 11.7% |
-| 5 | 1,186 | 8.6% |
-| 6 | 866 | 7.4% |
-| 7 | 647 | 5.3% |
-| 8 | 272 | 6.1% |
+| 2 | 13,286 | 40.8% |
+| 3 | 12,978 | 15.8% |
+| 4 | 9,716 | 11.0% |
+| 5 | 6,891 | 8.7% |
+| 6 | 5,546 | 6.2% |
+| 7 | 4,097 | 4.6% |
+| 8 | 2,660 | 4.3% |
 
-Markups fall steeply from two to four bidders, as competitive theory predicts.
+Markups fall steeply from two to four bidders and keep falling to 2–4% in large auctions, as competitive theory predicts.
 
 **Bid-rigging screens:**
 
@@ -69,7 +69,7 @@ Markups fall steeply from two to four bidders, as competitive theory predicts.
 uv run skills/io-gametheory/scripts/solvers/collusion.py bids --data panel_bids.csv --tender-col tender --process-col process --min-meet 8
 ```
 
-No rotation pattern across repeated tenders. The candidate groups the screen found met in one to three tenders each (items of the same tender split by specialty), which is one interaction, not repeated play.
+No rotation across repeated tenders. Six pairs of firms almost always bid together. Four met in one or two tenders only (items of one tender split by specialty). The other two met in six tenders each with a single buyer and won most items where they met. Neither took turns by tender: one pair looks like a market-share shift over time (one firm until 2023, the other from 2024), and in the other both firms win items inside the same tender, split by product. That pair stays on the watch list (step 6).
 
 **Court-ordered purchases:** the median gap between the winning and the second-lowest bid is 16.3% with two bidders and 3.5% with six or more (`data/court_orders_winner_gap.csv`).
 
@@ -84,7 +84,7 @@ uv run skills/io-gametheory/scripts/solvers/collusion.py sustain --model bertran
 
 - **The third bidder.** Markups and the winner's cushion drop sharply between two and four bidders; recruiting bidders beats any reserve-price tweak.
 - **A credible outside option.** In direct deals the price cannot exceed the State's real alternative. If importing costs about 15% over the international reference price, prices above roughly 1.15× mean that alternative was not used. An earlier comparison of 16 purchases found 1.13× (pembrolizumab) and 2.1× (nivolumab bought through a distributor).
-- **Collusion is sustainable** with about two effective firms and monthly purchases, even with a year's detection lag; the screens found no sign of it.
+- **Collusion is sustainable** with about two effective firms and monthly purchases, even with a year's detection lag; the screens found no rotation, and one product split to watch.
 
 ## 6. Referee: false alarms removed
 
@@ -92,11 +92,12 @@ uv run skills/io-gametheory/scripts/solvers/collusion.py sustain --model bertran
 |---|---|
 | A "cover bidder" losing every cochlear-implant item, 67–153% dearer | Two brands (MED-EL, Cochlear): competition between brands, and patients need compatible parts |
 | Losing bids clustered 1–3% above the winner | Distributors of one single-source drug with a common cost; pricing power is upstream |
-| Firms "taking turns" on 22 items | All items of a single tender, split by specialty; the screen now counts tenders, not items |
-| Bidders with many bids and no wins | The bids were items of one or two tenders, not independent tries |
+| Two pairs "taking turns" (84–92% of shared items, equal shares) | No turns by tender: one pair is a share shift over time; the other splits products inside each tender (brand-specific supplies with loaned equipment), which bids alone cannot tell apart from a market split, so it stays on the watch list. The screen now counts tenders and shows wins within each tender |
+| Four more groups that always bid together | Items of one or two tenders, split by specialty |
+| 24 bidders with 8+ bids and no wins | 18 bid in one or two tenders only; the other 6 priced above the item median (expensive, no evidence of cover bidding) |
 | A bid 58× cheaper | Quoted per capsule vs per box; comparing totals fixed 35 "probable winners" |
 
-Limits: "winner" is the lowest comparable bid, not the formal award; items whose bids differ more than fivefold are dropped; concentration counts firms by tax ID (corporate groups would raise it); screens are red flags, not evidence of wrongdoing.
+Limits: the category mixes drugs and medical supplies; "winner" is the lowest comparable bid, not the formal award; items whose bids differ more than fivefold are dropped; concentration counts firms by tax ID (corporate groups would raise it); screens are red flags, not evidence of wrongdoing.
 
 ## 7. The game card
 
