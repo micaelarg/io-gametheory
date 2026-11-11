@@ -13,6 +13,8 @@ SUBCOMMANDS
               --period), risk of breakdown (--breakdown p with inside options --d), OUTSIDE OPTIONS
               (--outside1/--outside2, outside-option principle), who proposes first, limit as offers
               become frequent (→ asymmetric Nash with power r2/(r1+r2)).
+              --rounds-sweep 1,2,3,5,10,inf [--names You,Them --base 33000]: when the protocol is not known,
+              shows how the result changes with the number of rounds and who opens / speaks last.
   offer       One-sided uncertainty: the other side's reservation price ~ distribution. Optimal
               take-it-or-leave-it offer, acceptance probability, expected gain, probability the ZOPA exists.
                 --role seller --reservation 100 --other "normal:130,20"
@@ -161,6 +163,17 @@ def cmd_rubinstein(a):
     L.append(f"- Discount factors per round δ1={d1:.4g}, δ2={d2:.4g}; breakdown risk per rejection p={p:g} "
              f"(inside options {fmt(b[0])}, {fmt(b[1])}); outside options {fmt(o[0])}, {fmt(o[1])}; player {first} proposes first.")
 
+    def finite(T, first_):
+        """Backward induction with T rounds; returns player 1's and player 2's payoff (agreement in round 1)."""
+        cont = [b[0], b[1]]
+        for t in range(T, 0, -1):
+            prop = first_ if (t % 2 == 1) else (3 - first_)
+            j, i = 2 - prop, prop - 1
+            give = max(o[j], [d1, d2][j] * cont[j])
+            cont = [0, 0]
+            cont[i], cont[j] = P - give, give
+        return cont[0], cont[1]
+
     if a.rounds:
         # backward induction, finite horizon; proposer in round t alternates starting with `first`
         T = a.rounds
@@ -215,6 +228,38 @@ def cmd_rubinstein(a):
                          "that, no more. An outside option helps only if it beats what you'd get by bargaining.")
             elif o[j] > 0:
                 L.append(f"- {nm}'s outside option ({fmt(o[j])}) does **not** bind: it is an empty threat and changes nothing.")
+    if a.rounds_sweep:
+        n1, n2 = (a.names.split(",") + ["player 2"])[:2] if a.names else ("player 1", "player 2")
+        base = a.base or 0.0
+        Ts = [x.strip() for x in a.rounds_sweep.split(",")]
+        rows = []
+        for T in Ts:
+            res = []
+            for f_ in (1, 2):
+                if T in ("inf", "∞"):
+                    v1 = A if f_ == 1 else P - B
+                    last = "nobody (no deadline)"
+                else:
+                    v1, _ = finite(int(T), f_)
+                    last = n1 if ((int(T) % 2 == 1) == (f_ == 1)) else n2
+                res.append((v1, last))
+            rows.append((T, res))
+        lab = f"{n1} gets" + (f" ({fmt(base)} + share)" if base else "")
+        L += ["", f"## How the outcome depends on the protocol (rounds × who opens)", "",
+              f"| rounds | first offer by {n1}: {lab} | last word | first offer by {n2}: {lab} | last word |",
+              "|---|---|---|---|---|"]
+        allv = []
+        for T, res in rows:
+            (v_a, l_a), (v_b, l_b) = res
+            allv += [v_a, v_b]
+            L.append(f"| {T} | {fmt(base + v_a)} | {l_a} | {fmt(base + v_b)} | {l_b} |")
+        lo, hi = min(allv), max(allv)
+        L += ["", f"- Across these protocols {n1} gets between **{fmt(base + lo)}** and **{fmt(base + hi)}**.",
+              "- The biggest driver is **who makes the last offer before the deadline**, not the number of rounds; with many "
+              "rounds both columns converge to the no-deadline split, which rewards the more patient side.",
+              f"- **To confirm with the user**: how many rounds or sessions there really are, who speaks last, and what happens at "
+              "the deadline. If the rule is written (mediation law, procedure, contract), cite it."]
+
     if a.r1 is not None:
         al = a.r2 / (a.r1 + a.r2)
         L.append(f"- Limit as rounds get short (Binmore-Rubinstein-Wolinsky 1986): asymmetric Nash with player 1's power "
@@ -449,6 +494,9 @@ def main():
     ap.add_argument("--breakdown", type=float, default=0.0)
     ap.add_argument("--outside1", type=float); ap.add_argument("--outside2", type=float)
     ap.add_argument("--first", type=int, default=1, choices=[1, 2]); ap.add_argument("--rounds", type=int)
+    ap.add_argument("--rounds-sweep", help="rubinstein: e.g. 1,2,3,5,10,inf - table of outcomes by number of rounds and who opens")
+    ap.add_argument("--names", help="rubinstein: names for player 1 and 2, e.g. 'You,Defendant'")
+    ap.add_argument("--base", type=float, help="rubinstein: amount added to player 1's share when reporting (e.g. their outside value)")
     ap.add_argument("--role", choices=["seller", "buyer"], default="seller"); ap.add_argument("--reservation", type=float, default=0)
     ap.add_argument("--other", default="uniform:0,1"); ap.add_argument("--support", default="0,1")
     ap.add_argument("--truncate-below", type=float); ap.add_argument("--if-rejected", type=float)

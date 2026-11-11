@@ -2,7 +2,15 @@
 
 Principle: **every dataset must change a number in the game.** For each one, say which payoff, parameter or player it disciplines. Order of preference: **ask the user → open data → official APIs → paid APIs → scraping**. Source URLs and formats change: verify before relying on one, and record URL + access date for every number used.
 
-## 0. Ask the user first (nobody else has it)
+## 0a. The rules of the game (look them up, then confirm)
+Rounds, deadlines, who speaks last, what happens on breakdown and what is allowed are usually written somewhere:
+- **Legal disputes**: civil procedure codes and mediation laws (e.g. mandatory pre-trial mediation in Argentina, Italy; court-annexed mediation elsewhere), small-claims rules, statutes of limitation, cost-shifting rules (who pays legal costs if you lose).
+- **Employment**: labour codes, collective agreements, notice periods, non-compete clauses.
+- **Procurement and auctions**: the tender's own terms (pliego), procurement law, auction-house conditions of sale (buyer's premium, reserves, withdrawal rules).
+- **Business**: contract clauses (exclusivity, termination, renegotiation), franchise agreements, licensing and zoning rules.
+Cite the rule you found; if you could not find or verify it, ask the user.
+
+## 0b. Ask the user first (nobody else has it)
 Own costs and margins, rents, sales by store/period/ticket (calibrates Huff β and attractiveness), loyalty/card data with customer postcodes (true catchments), reservation prices and BATNAs, past bids and auction results, contract terms.
 
 ## 1. Global sources (work in any country)
@@ -72,4 +80,4 @@ EU DG COMP; UK CMA; US FTC/DOJ; Germany Bundeskartellamt; France Autorité de la
 5. No personal data; aggregate. Mind GDPR/LGPD and local equivalents.
 
 ## 5. When data is missing
-Proceed with labeled assumptions and ranges, run the sensitivity, and end with: *"The single number that would most change this conclusion is X; you can get it from Y."*
+Ask. If you must proceed, state each assumption as a question to confirm ("I assumed ... Is that right? If not, how does it work?"), give its range, run the sensitivity, and end with: *"The single number that would most change this conclusion is X; you can get it from Y."*

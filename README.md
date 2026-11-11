@@ -59,7 +59,15 @@ Game theory is useful whenever **your best move depends on what someone else wil
 
 > *"My lawyer suggests I demand 70k and hold out through three mediation sessions. What's optimal?"*
 
-The skill frames it (assumptions labeled, change them to your case): you have a 60% chance of winning 80k at trial, and trial costs each side 15k. Going to trial is worth **33k** to you and costs the other side **63k**, so any settlement between 33k and 63k beats trial for both. You don't know their true limit; assume it is around 63k, give or take 10k.
+**First, the rules of the game.** The skill does not guess them. It looks up what is written (the mediation law and civil procedure of your country) and asks you for the rest. Anything it has to assume comes back as a question:
+
+> **Assumptions to confirm**
+> - I assumed you have a 60% chance of winning 80k at trial. Is that what your lawyer estimates? If not, what is it?
+> - I assumed trial costs each side about 15k. Is that right? If not, how much?
+> - I assumed the other side's limit is around 63k, give or take 10k. Do you know anything about it (offers so far, their insurer, their costs)?
+> - I assumed there are three mediation sessions and the other side makes the last offer. Is that how it works in your case? If not, how does it?
+
+With those numbers, trial is worth **33k** to you and costs the other side **63k**, so any settlement between 33k and 63k beats trial for both.
 
 ```
 uv run skills/io-gametheory/scripts/solvers/bargaining.py offer --role seller --reservation 33000 --other normal:63000,10000
@@ -68,12 +76,25 @@ uv run skills/io-gametheory/scripts/solvers/bargaining.py offer --role seller --
 
 - **Demanding 70k** is accepted only about 24% of the time if a rejection sends you to trial: expected gain about 9k, half the optimum.
 - **The optimal demand is about 56k**: 75% chance of a deal, about 17k expected gain over going to trial.
-- **Holding out pays only if waiting costs them more than it costs you.** If each mediation round costs you 3% and them 2%, alternating offers settle around 45k: the more patient side gets more.
-- **Deadlines matter.** Whoever makes the last offer before trial has most of the power; that is worth more than the size of the opening demand.
+
+**Then, how much the protocol matters.** Because the number of sessions and who speaks last are not known yet, the skill shows every case instead of picking one:
 
 ```
-uv run skills/io-gametheory/scripts/solvers/bargaining.py rubinstein --pie 30000 --delta1 0.97 --delta2 0.98 --rounds 3
+uv run skills/io-gametheory/scripts/solvers/bargaining.py rubinstein --pie 30000 --delta1 0.97 --delta2 0.98 \
+    --rounds-sweep 1,2,3,5,10,inf --names You,Defendant --base 33000
 ```
+
+| rounds | you make the first offer | last word | they make the first offer | last word |
+|---|---|---|---|---|
+| 1 | 63,000 | you | 33,000 | them |
+| 2 | 33,600 | them | 62,100 | you |
+| 3 | 62,118 | you | 33,582 | them |
+| 10 | 35,718 | them | 58,923 | you |
+| no deadline | 45,146 | nobody | 44,781 | nobody |
+
+- **Who makes the last offer before the deadline decides almost everything** (33k vs 63k); the number of sessions barely matters.
+- **Without a hard deadline**, the split goes to the more patient side. If each round costs you 3% and them 2%, you settle around 45k: holding out only pays if waiting costs them more than it costs you.
+- So the question for your lawyer is not "how much do we ask for" but **"who speaks last, and what does each month of waiting cost each side?"**
 
 ## Location, end to end
 

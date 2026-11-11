@@ -7,6 +7,7 @@ Script: `scripts/solvers/bargaining.py` (`nash`, `rubinstein`, `offer`, `double`
 - **The pie** - what is created by agreeing vs not agreeing. Name the **value created** (synergies, gains from trade) separately from how it is **split**.
 - **BATNAs / disagreement point** - what each gets with no deal: next-best buyer, strike pay, litigation outcome, the status quo. Distinguish **inside options** (what you get *while* disagreeing: rent during a dispute) from **outside options** (what you get if you *quit* for good).
 - **Timing and costs of delay** - discount rates, deadlines, perishability, risk of breakdown (the other side walks, regulation changes, a competitor steps in).
+- **The protocol** - who makes offers, how many rounds or sessions, **who has the last word before the deadline**, and what happens at the deadline (trial, strike, walk-away, status quo). Look it up (mediation law, procedure, contract) or ask; never invent it. When it is unknown, run `rubinstein --rounds-sweep` and show how the split changes with the number of rounds and with who speaks last.
 - **Information** - does each side know the other's reservation price? Private info → delay, failed deals, signaling.
 
 ## 2. Which model when
@@ -16,6 +17,7 @@ Script: `scripts/solvers/bargaining.py` (`nash`, `rubinstein`, `offer`, `double`
 | Who has more patience / who moves first matters | Rubinstein alternating offers | `rubinstein --delta1 --delta2` or `--r1 --r2 --period` |
 | A credible walk-away option exists | Outside-option principle | `rubinstein --outside2 …` |
 | Hard deadline | Finite-horizon alternating offers | `rubinstein --rounds T` |
+| Unknown number of rounds / who speaks last | Sweep the protocol | `rubinstein --rounds-sweep 1,2,3,5,10,inf` |
 | Risk the talks collapse (not impatience) | Breakdown probability, inside options | `rubinstein --breakdown p --d …` |
 | You don't know their reservation price | Optimal (final) offer under uncertainty | `offer --role --reservation --other dist` |
 | Neither knows the other's | Chatterjee-Samuelson / Myerson-Satterthwaite | `double --support` |

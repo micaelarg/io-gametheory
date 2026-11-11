@@ -60,7 +60,7 @@ Comparative statics as decisions: thresholds, not derivatives.
 ## Style rules
 
 - Numbers beat letters. Round sensibly (no false precision: "~40%" not "39.87%").
-- Label every assumption as **(assumption)** and give its range.
+- Never hide an assumption. Put an **Assumptions to confirm** block at the top, one line each, phrased as a question in the user's language: *"I assumed the mediation has three sessions and the other side speaks last. Is that right? If not, how does it work?"* Give the range you tested and whether the recommendation survives it.
 - Name the solver and the check: "solved with support enumeration; grid check on 201 points found the same equilibrium".
 - If an assumption drives the result, say it up front, not in a footnote.
 - Prefer one long-lived concept (best response, commitment, credibility, outside option, cannibalization) over listing five.

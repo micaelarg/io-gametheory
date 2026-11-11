@@ -17,8 +17,14 @@ Answer in the user's language. The skill is global: use the user's country's dat
 - Who decides? What do they want? What is the decision that the answer will change?
 - Positive ("what will happen") or normative ("what should X do / what should the rule be")?
 - What is the counterfactual? ("compared to what?")
+- **Rules of the game.** Who moves when, how many rounds or stages, who has the last word, what happens at a deadline or when talks break down, what is allowed (bids, side payments, exit), what each side can observe. Rules usually decide the answer more than payoffs do. Get them, in this order:
+  1. what the user already said;
+  2. written rules that govern the situation - law and procedure (e.g. mandatory pre-trial mediation, court deadlines), tender regulations, auction-house terms, collective agreements, contract clauses, licensing rules - look them up for the user's country and cite them;
+  3. **ask the user** for the rules only they know (what their lawyer said, the counterpart's deadline, the contract's terms).
 
-**2. Data first.** Before theorizing, list the data that would discipline the answer and how to get it - read `references/data-acquisition.md`. Fetch what is open and cheap. Ask the user for what only they have (costs, margins, rents, private sales data). Never stall for data: if it is missing, proceed with **explicit, labeled assumptions with ranges**, and say which assumption matters most.
+**Do not assume silently.** Prefer asking over assuming. When the user wants an answer now or a fact cannot be known, you may proceed, but state every assumption that matters as a question to confirm, in the user's language: *"I assumed that ... Is that right? If not, how does it work?"* (*"Supuse que ... ¿Es así? Si no, ¿cómo es?"*). Collect them in an **Assumptions to confirm** block at the top of the answer, and show how the conclusion changes if an assumption is wrong (sweep it: rounds, deadlines, probabilities, the other side's limits).
+
+**2. Data first.** Before theorizing, list the data that would discipline the answer and how to get it - read `references/data-acquisition.md`. Fetch what is open and cheap. Ask the user for what only they have (costs, margins, rents, private sales data, the rules in step 1). If data is missing, follow the same rule: ask, or proceed with the assumption stated as a question to confirm, with a range, and say which one matters most.
 
 **3. Write the game.** The five pieces, explicitly - players, actions, timing, information, payoffs (with numbers, not just letters). Then classify it on the four discrete/continuous axes (strategies, time, types, population) and pick the solver - read `references/solution-methods.md`. If you cannot write the five pieces, the question is not yet well posed: say so and pose it.
 
@@ -83,7 +89,8 @@ Operational notes: the public Overpass server is often saturated - scripts retry
 - [ ] The five pieces are written, with numbers.
 - [ ] The equilibrium came from code, and continuous ones were cross-checked.
 - [ ] Multiple equilibria / no pure equilibrium / corners were checked, not assumed away.
-- [ ] Every number that is an assumption is labeled as such, with a range.
+- [ ] The rules of the game come from the user, a cited rule, or are listed under **Assumptions to confirm** as "I assumed ... Is that right? If not, how does it work?".
+- [ ] Every number that is an assumption is phrased as a question to confirm, with a range, and the answer shows what changes if it is wrong.
 - [ ] There is at least one threshold that flips the recommendation.
 - [ ] The three strongest objections are stated and answered.
 - [ ] A non-economist could retell the story and why the equilibrium is stable.
