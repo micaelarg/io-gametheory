@@ -1,0 +1,4 @@
+{"title":"Homogeneous Bertrand","players":{
+ "Firm 1":{"var":"p1","payoff":"(p1-c)*Piecewise(((a-p1), p1<p2), ((a-p1)/2, Eq(p1,p2)), (0, True))","bounds":[0,60]},
+ "Firm 2":{"var":"p2","payoff":"(p2-c)*Piecewise(((a-p2), p2<p1), ((a-p2)/2, Eq(p1,p2)), (0, True))","bounds":[0,60]}},
+ "params":{"a":100,"c":10}}

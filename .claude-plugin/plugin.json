@@ -1,0 +1,10 @@
+{
+  "name": "io-gametheory",
+  "version": "1.0.0",
+  "description": "Applied industrial organization and game theory analyst: business location with real maps, Hotelling, auctions and procurement, bargaining, mergers, collusion screens and evolutionary games. Writes the game down, solves it with verified code, and explains it so a non-economist understands.",
+  "author": { "name": "micaelarg", "url": "https://github.com/micaelarg" },
+  "homepage": "https://github.com/micaelarg/io-gametheory",
+  "repository": "https://github.com/micaelarg/io-gametheory",
+  "license": "MIT",
+  "keywords": ["game-theory", "industrial-organization", "economics", "auctions", "procurement", "bargaining", "location", "hotelling", "antitrust", "collusion", "evolutionary-games"]
+}

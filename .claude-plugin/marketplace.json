@@ -1,0 +1,16 @@
+{
+  "name": "io-gametheory",
+  "owner": {
+    "name": "micaelarg",
+    "url": "https://github.com/micaelarg"
+  },
+  "plugins": [
+    {
+      "name": "io-gametheory",
+      "source": "./",
+      "description": "Applied IO and game theory: location, auctions, bargaining, mergers, collusion screens, evolutionary games.",
+      "version": "1.0.0"
+    }
+  ],
+  "description": "Applied industrial organization and game theory for agents: location, auctions, bargaining, mergers, collusion screens, evolutionary games."
+}

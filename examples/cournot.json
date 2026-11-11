@@ -1,0 +1,4 @@
+{"title":"Cournot duopoly","players":{
+ "Firm 1":{"var":"q1","payoff":"(a - b*(q1+q2) - c1)*q1","bounds":[0,100]},
+ "Firm 2":{"var":"q2","payoff":"(a - b*(q1+q2) - c2)*q2","bounds":[0,100]}},
+ "params":{"a":100,"b":1,"c1":10,"c2":20}}

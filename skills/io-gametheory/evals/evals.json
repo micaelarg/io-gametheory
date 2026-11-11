@@ -1,0 +1,246 @@
+{
+  "skill": "io-gametheory",
+  "version": "1.0 (all modules)",
+  "how_to_run": "Run each prompt in a fresh session with the skill available. Grade every 'must' item pass/fail; the case passes only if all 'must' items pass. 'must_not' items are automatic fails.",
+  "cases": [
+    {
+      "id": "core-cournot-asym",
+      "prompt": "Dos fábricas de cemento compiten en cantidades. Demanda P = 100 - Q. Costos marginales 10 y 20. ¿Cuánto produce cada una y qué pasa si la segunda baja su costo a 15?",
+      "must": [
+        "Writes the five pieces (players, actions, timing, information, payoffs)",
+        "Equilibrium q1 = 33.3, q2 = 23.3 obtained with continuous_br.py (not by hand only)",
+        "Reports verification (no profitable deviation) and the grid check",
+        "Comparative statics: q2 rises by 3.33 and q1 falls by 1.67 when c2 falls by 5",
+        "States quantities are strategic substitutes and explains it in plain words",
+        "Explains why the equilibrium is stable using deviation logic"
+      ],
+      "must_not": [
+        "Equilibrium stated without code",
+        "Only symbols, no numbers"
+      ]
+    },
+    {
+      "id": "core-bertrand-discrete",
+      "prompt": "Dos estaciones de servicio enfrentadas venden nafta idéntica, costo $1000 el litro. ¿A qué precio terminan? ¿Cambia algo que los precios sean en pesos enteros?",
+      "must": [
+        "Identifies homogeneous Bertrand: continuous equilibrium p = c",
+        "Notes that with discrete prices there is also an equilibrium at c + 1 (grid check shows both)",
+        "Referee: repeated interaction / price transparency make tacit collusion plausible (Bertrand paradox resolution); capacity, location differentiation",
+        "Gives critical discount factor logic for collusion (delta >= 1/2 for duopoly grim trigger)"
+      ]
+    },
+    {
+      "id": "core-no-pure-eq",
+      "prompt": "Dos empresas compiten en un concurso donde ambas pagan su inversión gane o pierda; el premio vale 1 millón para A y 800 mil para B. ¿Cuánto invierte cada una?",
+      "must": [
+        "Recognizes an all-pay contest with no pure equilibrium",
+        "Uses mixed_continuous.py",
+        "Reports: both mix on [0, 800k]; B places ~20% mass at zero; A's expected payoff ≈ 200k, B's ≈ 0",
+        "Explains indifference: every bid in the support gives the same expected payoff",
+        "Counterintuitive point: total expected spending is large relative to the prize (rent dissipation)"
+      ]
+    },
+    {
+      "id": "core-entry-deterrence",
+      "prompt": "Soy el único supermercado de un pueblo. Si entra una cadena, puedo hacer guerra de precios (yo gano 1, ellos pierden 2) o acomodarme (yo 4, ellos 3). Si no entran gano 9. ¿Amenazo con guerra de precios?",
+      "must": [
+        "Uses extensive_form.py; SPE = Enter, Accommodate",
+        "Flags the price-war threat as not credible and explains why",
+        "Discusses what would make it credible: commitment (capacity, contracts, reputation in multiple markets)",
+        "Gives a threshold: e.g. the investment/commitment that makes fighting optimal"
+      ]
+    },
+    {
+      "id": "location-full",
+      "prompt": "Tengo una cadena de supermercados medianos en CABA y quiero abrir uno en Villa Crespo. Tengo 4 locales candidatos (te paso coordenadas y alquileres). ¿Cuál elijo? Me preocupa que Carrefour también esté buscando en la zona.",
+      "must": [
+        "Asks for (or labels as assumptions) margin, spend per capita, rents, own store locations",
+        "Mentions SEPA / census radios as data sources and uses competitors_osm.py",
+        "Detects that OSM buildings are incomplete in CABA and uses census or the street proxy, saying so",
+        "Runs huff.py with network distance, beta sweep and cannibalization",
+        "Runs location_game.py and contrasts naive vs strategic choice",
+        "Flags near ties and edge effects when present",
+        "Produces a map (map.py) with annotation",
+        "Gives a threshold that flips the recommendation (rent difference or rival move)",
+        "Game card with executive / intuitive / formal levels"
+      ],
+      "must_not": [
+        "Picks a winner when the top two differ by < 5% without saying it is a tie"
+      ]
+    },
+    {
+      "id": "location-theory",
+      "prompt": "¿Por qué las heladerías se juntan en la misma cuadra y los supermercados se separan?",
+      "must": [
+        "Hotelling: fixed prices → clustering; price competition with quadratic costs → maximum differentiation",
+        "Agglomeration from consumer search vs convenience goods",
+        "Short answer: does NOT run the map pipeline",
+        "One-sentence memorable intuition"
+      ]
+    },
+    {
+      "id": "explain-test",
+      "prompt": "Explicale a mi socio, que no es economista, por qué conviene que el competidor sepa que ya firmamos el alquiler.",
+      "must": [
+        "Story in two lines without jargon",
+        "Concept: commitment / first-mover advantage; observability is essential (a secret commitment is worth nothing)",
+        "Uses numbers (even illustrative, labeled)",
+        "No terms like 'subgame perfect' in the intuitive level"
+      ]
+    },
+    {
+      "id": "hotelling-cluster",
+      "prompt": "Two ice-cream carts on a 1 km beach with fixed prices. Where do they stand? And if they can set prices freely and walking cost is quadratic?",
+      "must": [
+        "Fixed prices: both at the median (hotelling.py location --stage fixed)",
+        "Price competition with quadratic costs: maximum differentiation at the ends; prices = t",
+        "Compares with social optimum (quartiles): too little vs too much differentiation",
+        "Tent diagram as the picture"
+      ]
+    },
+    {
+      "id": "hotelling-three",
+      "prompt": "Three gas stations along a highway, regulated identical prices. Where do they locate?",
+      "must": [
+        "Recognizes Eaton-Lipsey: no pure equilibrium with 3 firms",
+        "Shows it with hotelling.py (exhaustive grid proof)",
+        "Discusses what happens in practice: sequential entry, mixed strategies, other dimensions"
+      ]
+    },
+    {
+      "id": "auction-reserve-art",
+      "prompt": "Voy a subastar una obra; creo que hay 4 compradores serios con valuaciones lognormales alrededor de USD 50k (sigma 0.5). Yo la valoro en 20k. ¿Qué reserva pongo? ¿Conviene más buscar otro comprador?",
+      "must": [
+        "Uses auctions.py reserve with lognormal and v0",
+        "Reports Myerson reserve and that it does not depend on n",
+        "Bulow-Klemperer comparison with numbers",
+        "Mentions buyer's premium / estimates as context; English auction ≈ second price"
+      ]
+    },
+    {
+      "id": "procurement-asym",
+      "prompt": "In a road tender, one incumbent has costs ~U[60,100] and two entrants ~U[70,120]. First-price sealed bid. What will they bid and is the auction efficient? Should the agency give entrants a bidding credit?",
+      "must": [
+        "Uses auctions.py numeric --procurement with three bidders",
+        "Reports bid functions, efficiency below 100%, expected spend vs second-price",
+        "Explains weak bidders bid more aggressively",
+        "Discusses bidding credits / preferences as a design tool with a quantified trade-off or a clear way to quantify it"
+      ]
+    },
+    {
+      "id": "gpv-collusion",
+      "prompt": "Tengo un CSV de licitaciones con todas las ofertas. ¿Cómo sé si los márgenes son competitivos o hay colusión?",
+      "must": [
+        "Normalizes bids by an estimate/budget before GPV",
+        "Runs auctions.py gpv by number of bidders",
+        "Reads markups vs n and monotonicity as red flags, not proof",
+        "Lists screens (rotation, cover bids) and legal caveat"
+      ]
+    },
+    {
+      "id": "bargain-salary",
+      "prompt": "I have a job offer for 90k; my current job pays 80k; the new employer would pay up to maybe 110k (my guess: normal with mean 105k, sd 10k). What should I ask for?",
+      "must": [
+        "Uses bargaining.py offer with the reservation = 80k-equivalent BATNA and the employer's max as distribution",
+        "Gives an ask with acceptance probability and expected gain",
+        "Explains outside option principle (the current job only matters if it beats the bargaining share)",
+        "Mentions improving the BATNA (another offer) as the main lever"
+      ]
+    },
+    {
+      "id": "bargain-multi",
+      "prompt": "Negociación con un proveedor: precio, plazo de pago, volumen mínimo y exclusividad. ¿Cómo armo la propuesta?",
+      "must": [
+        "Builds an issues JSON with each side's priorities (asks or assumes, labeled)",
+        "Runs bargaining.py issues",
+        "Shows that splitting each issue is inefficient and proposes logrolling",
+        "States BATNAs and the ZOPA"
+      ]
+    },
+    {
+      "id": "global-location",
+      "prompt": "Where should I open a pharmacy in Valencia, Spain? Here are 3 candidate addresses.",
+      "must": [
+        "Uses Spanish sources (INE secciones censales + renta, regulated pharmacy distances/ratios rules in Spain as legal constraint)",
+        "Competitors from OSM and Overture",
+        "Does not assume Argentine sources or currency"
+      ]
+    },
+    {
+      "id": "merger-retail",
+      "prompt": "Two supermarket chains with 30% and 25% of a regional market want to merge; the others have 20, 15 and 10. Survey says 30% of chain A's customers would switch to B. Margins around 25%. Will the authority object and how much would prices rise?",
+      "must": [
+        "merger.py hhi with US/EU/UK readings (ΔHHI 1500)",
+        "merger.py upp with stated or labeled diversion/margins; GUPPI and CMCR",
+        "Mentions local market definition (catchments) - links to location module",
+        "Efficiency claims vs CMCR as the threshold"
+      ]
+    },
+    {
+      "id": "demand-endog",
+      "prompt": "I have prices and market shares of beers across 300 cities. How price-sensitive is demand?",
+      "must": [
+        "merger.py demand with outside share defined by market size",
+        "Explains price endogeneity and proposes instruments (Hausman, cost shifters, BLP)",
+        "Reports OLS vs 2SLS and elasticities; validates implied margins"
+      ]
+    },
+    {
+      "id": "collusion-fuel",
+      "prompt": "En mi ciudad las 4 estaciones de servicio cambian el precio el mismo día. ¿Es colusión?",
+      "must": [
+        "collusion.py sustain (few firms, daily interaction, public prices → easy to sustain)",
+        "collusion.py prices on a station-level panel (suggests the country's open fuel/price data)",
+        "Distinguishes Edgeworth cycles / common cost shocks from coordination",
+        "States that screens are red flags, not proof; legal context"
+      ]
+    },
+    {
+      "id": "bid-rigging",
+      "prompt": "Here's a CSV of 5 years of municipal road tenders with all bids. Find anything suspicious.",
+      "must": [
+        "collusion.py bids with estimate if available",
+        "auctions.py gpv markups vs n",
+        "Reports rotation groups, cover-bid tenders, never-winning bidders",
+        "Innocent explanations and next steps (before/after events, Porter-Zona)"
+      ]
+    },
+    {
+      "id": "evo-hawkdove",
+      "prompt": "En una especie de pájaros, pelear por un territorio vale 2 y una herida cuesta 4. ¿Qué proporción de agresivos esperás?",
+      "must": [
+        "evolutionary.py ess --hawk-dove 2,4 → mixed ESS 50% hawks (V/C)",
+        "Explains stability as self-correcting frequencies",
+        "Phase line plot",
+        "Sensitivity: if C < V all hawks"
+      ]
+    },
+    {
+      "id": "evo-convention",
+      "prompt": "Why might a whole industry stick with an inferior technical standard even when a better one exists?",
+      "must": [
+        "Coordination game with two ESS",
+        "Risk dominance vs payoff dominance; basins (dynamics) and stochastic selection (moran / KMR)",
+        "Real examples and what could tip the market (subsidies, coalitions of early adopters)"
+      ]
+    },
+    {
+      "id": "evo-genetics",
+      "prompt": "A new mutation gives a 1% advantage in heterozygotes in a population of 500 individuals. What's the chance it spreads?",
+      "must": [
+        "genetics with Kimura: ≈ 2s ≈ 2% vs neutral 0.1%",
+        "Wright-Fisher simulation agreeing",
+        "Explains most beneficial mutations are lost to drift early"
+      ]
+    },
+    {
+      "id": "evo-cooperation",
+      "prompt": "¿Cómo puede sobrevivir la cooperación si los que se aprovechan siempre ganan más?",
+      "must": [
+        "PD is not cooperative in well-mixed populations (ess)",
+        "At least three mechanisms (kin, reciprocity, reputation, spatial) with their thresholds",
+        "spatial run showing clusters"
+      ]
+    }
+  ]
+}

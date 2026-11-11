@@ -1,0 +1,4 @@
+{"title":"All-pay auction (asymmetric values)","players":{
+ "Strong":{"var":"b1","payoff":"V1*Piecewise((1, b1>b2), (Rational(1,2), Eq(b1,b2)), (0, True)) - b1","bounds":[0,1]},
+ "Weak":{"var":"b2","payoff":"V2*Piecewise((1, b2>b1), (Rational(1,2), Eq(b1,b2)), (0, True)) - b2","bounds":[0,1]}},
+ "params":{"V1":1.0,"V2":0.8}}

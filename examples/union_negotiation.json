@@ -1,0 +1,7 @@
+{"parties":["Union","Firm"],
+ "issues":[
+  {"name":"wage increase","options":["3%","5%","7%"],"scores":{"Union":[0,30,45],"Firm":[40,20,0]}},
+  {"name":"remote days","options":["0","1","2"],"scores":{"Union":[0,20,30],"Firm":[10,8,6]}},
+  {"name":"bonus","options":["none","annual","quarterly"],"scores":{"Union":[0,5,8],"Firm":[30,15,0]}},
+  {"name":"job security","options":["1y","3y"],"scores":{"Union":[0,25],"Firm":[10,5]}}],
+ "batna":{"Union":30,"Firm":25}}

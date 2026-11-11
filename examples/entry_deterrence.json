@@ -1,0 +1,3 @@
+{"title":"Entry deterrence","tree":{"player":"Entrant","actions":{
+ "Enter":{"player":"Incumbent","actions":{"Price war":{"payoffs":{"Entrant":-2,"Incumbent":1}},"Accommodate":{"payoffs":{"Entrant":3,"Incumbent":4}}}},
+ "Stay out":{"payoffs":{"Entrant":0,"Incumbent":9}}}}}
