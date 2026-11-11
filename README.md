@@ -22,6 +22,88 @@ A language model already knows the theory. What it lacks is discipline. This ski
 
 Every solver was tested against closed-form results from the literature (Cournot, Stackelberg, Rubinstein, Myerson, Griesmer/Plum asymmetric auctions, d'Aspremont-Gabszewicz-Thisse, Salop, Hillman-Riley all-pay, Chatterjee-Samuelson, Kimura) and the skill was evaluated on 23 realistic prompts.
 
+## Where game theory helps: questions people actually ask
+
+Game theory is useful whenever **your best move depends on what someone else will do**. Some examples, grouped by situation, with what the skill does with each:
+
+**Disputes and legal decisions**
+- *"My lawyer suggests I demand 70k and hold out through three mediation sessions. What's optimal?"* → bargaining with an uncertain counterpart, deadlines and the cost of waiting (worked example below).
+- *"Should I accept this settlement offer or go to trial?"* → compares the offer with the expected value of trial for **both** sides; the gap between them is the zone of agreement.
+- *"How should we split the assets in a divorce?"* → multi-issue negotiation: trading the issues each side cares less about beats splitting each one in half.
+
+**Work and careers**
+- *"I have an offer for 90k; I think they'd go up to 110k. What should I ask for?"* → optimal counteroffer, its chance of acceptance, and when your current job matters (only if it beats what you would get by negotiating).
+- *"How do we split equity among four co-founders?"* → Shapley value (each founder's average contribution) and whether any split is stable.
+
+**Business strategy**
+- *"Where should I open my next store? A rival chain is looking at the same street."* → maps, catchment areas, cannibalization, and the rival's best response (location module).
+- *"If I cut prices, will my competitor follow?"* → price competition, strategic complements, and whether a price war is credible.
+- *"Can I keep a new competitor out of my town?"* → entry deterrence: which threats are credible and which commitments make them so.
+
+**Buying and selling**
+- *"I'm selling a painting. Auction or fixed price? What reserve?"* → optimal reserve, and whether recruiting one more buyer is worth more.
+- *"How much should we bid in this public tender?"* → equilibrium bidding against bidders with different costs.
+- *"We're buying a house. What's our first offer?"* → the optimal offer under uncertainty about the seller's minimum.
+
+**Markets, policy and investigation**
+- *"Will this merger raise prices?"* → concentration, upward pricing pressure and merger simulation.
+- *"Do these tender results look rigged?"* → bid-rigging screens and markups by number of bidders.
+- *"Why do all four gas stations change prices on the same day?"* → whether coordination is sustainable, and how to tell it from common cost shocks.
+
+**Groups, norms and biology**
+- *"How should five towns share the cost of a hospital?"* → cooperative game: Shapley value and the core.
+- *"Why does our industry stick with an inferior standard?"* → coordination games and which convention wins in the long run.
+- *"Why do aggressive and peaceful behaviors coexist in this species?"* → evolutionarily stable strategies.
+
+## Worked example: settle or hold out?
+
+> *"My lawyer suggests I demand 70k and hold out through three mediation sessions. What's optimal?"*
+
+The skill frames it (assumptions labeled, change them to your case): you have a 60% chance of winning 80k at trial, and trial costs each side 15k. Going to trial is worth **33k** to you and costs the other side **63k**, so any settlement between 33k and 63k beats trial for both. You don't know their true limit; assume it is around 63k, give or take 10k.
+
+```
+uv run skills/io-gametheory/scripts/solvers/bargaining.py offer --role seller --reservation 33000 --other normal:63000,10000
+- Optimal offer: 56,360 → accepted with probability 75%, expected gain 17,442
+```
+
+- **Demanding 70k** is accepted only about 24% of the time if a rejection sends you to trial: expected gain about 9k, half the optimum.
+- **The optimal demand is about 56k**: 75% chance of a deal, about 17k expected gain over going to trial.
+- **Holding out pays only if waiting costs them more than it costs you.** If each mediation round costs you 3% and them 2%, alternating offers settle around 45k: the more patient side gets more.
+- **Deadlines matter.** Whoever makes the last offer before trial has most of the power; that is worth more than the size of the opening demand.
+
+```
+uv run skills/io-gametheory/scripts/solvers/bargaining.py rubinstein --pie 30000 --delta1 0.97 --delta2 0.98 --rounds 3
+```
+
+## Location, end to end
+
+![Candidate supermarket sites in Villa Crespo, Buenos Aires: competitors, demand heat, walking catchments and the rival's best answer](docs/img/location-map.png)
+
+A real-world run, in the order the skill does it:
+
+```
+# 0. Can you legally open there? (pharmacies, tobacconists, fuel, liquor... check licensing rules first)
+uv run skills/io-gametheory/scripts/location/geocode.py "Carrer de Sueca 60, València, Spain" --out sites.csv
+uv run skills/io-gametheory/scripts/location/competitors_osm.py --lat 39.4597 --lon -0.3739 --radius 1500 --tag amenity=pharmacy --out osm.csv
+uv run skills/io-gametheory/scripts/location/competitors_overture.py --lat 39.4597 --lon -0.3739 --radius 1500 --match pharmacy --out overture.csv
+uv run skills/io-gametheory/scripts/location/merge_competitors.py osm.csv overture.csv --out rivals.csv
+uv run skills/io-gametheory/scripts/location/demand.py --osm-streets --lat 39.4597 --lon -0.3739 --radius 1500 --out demand.csv   # or census data
+uv run skills/io-gametheory/scripts/location/isochrones.py --sites sites.csv --minutes 5,10 --mode walk --demand demand.csv --out iso.geojson
+uv run skills/io-gametheory/scripts/location/huff.py --demand demand.csv --stores rivals.csv --candidates sites.csv --distance network --beta-sweep 1,1.5,2,2.5,3
+uv run skills/io-gametheory/scripts/location/location_game.py --demand demand.csv --stores rivals.csv --a-candidates sites.csv --b-candidates sites.csv --allow-out
+uv run skills/io-gametheory/scripts/location/map.py --demand demand.csv --stores rivals.csv --candidates huff_results.csv --candidates-geo sites.csv --isochrones iso.geojson --out map.html
+```
+
+Location questions it handles: which site captures more customers, how much a new store takes from your own stores, whether the ranking survives different assumptions about how far people walk, what the rival will do if you sign first, whether to cluster with competitors or stay away (Hotelling), how many stores a neighborhood can support (Salop), and whether regulation even allows the site.
+
+## What the output looks like
+
+| Best responses (Cournot) | Evolutionary dynamics (rock-paper-scissors) |
+|---|---|
+| ![Best-response curves crossing at the Nash equilibrium, with the Stackelberg point](docs/img/best-responses.png) | ![Trajectories spiralling outward in the strategy simplex](docs/img/rock-paper-scissors.png) |
+
+Every analysis ends with a **game card**: the story in two lines, the five pieces of the game, the right picture, why nobody wants to move, what is counterintuitive, and what would change the answer.
+
 ## The method
 
 1. **Frame**: who decides, what they want, compared to what.
@@ -66,6 +148,7 @@ Just ask. The skill activates on questions about competition, location, auctions
 - *"I'm auctioning a painting; four serious buyers, values around 50k. What reserve should I set?"*
 - *"Here is a CSV of five years of road tenders with every bid. Find anything suspicious."*
 - *"I have an offer for 90k and think they'd go up to 110k. What should I ask for?"*
+- *"My lawyer says to demand 70k and wait for three mediations. Is that optimal?"*
 - *"Why might an industry stick with an inferior standard?"*
 
 The scripts also work on their own. Each one prints a markdown report and has `--help`:

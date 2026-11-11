@@ -1,6 +1,6 @@
 {
   "skill": "io-gametheory",
-  "version": "1.0 (all modules)",
+  "version": "1.1",
   "how_to_run": "Run each prompt in a fresh session with the skill available. Grade every 'must' item pass/fail; the case passes only if all 'must' items pass. 'must_not' items are automatic fails.",
   "cases": [
     {
@@ -240,6 +240,16 @@
         "PD is not cooperative in well-mixed populations (ess)",
         "At least three mechanisms (kin, reciprocity, reputation, spatial) with their thresholds",
         "spatial run showing clusters"
+      ]
+    },
+    {
+      "id": "legal-settlement",
+      "prompt": "Mi abogado sugiere que pida 70 mil dólares y espere tres mediaciones antes de aceptar. Creo que tengo 60% de chances de ganar 80 mil en juicio y el juicio le cuesta 15 mil a cada parte. ¿Qué es lo óptimo?",
+      "must": [
+        "Computes both sides' trial values (33k for the claimant, 63k cost for the defendant) and the settlement range",
+        "Uses bargaining.py offer with labeled uncertainty about the other side's limit; shows 70k has low acceptance probability and an optimal demand near the mid-50s",
+        "Explains that holding out pays only if waiting costs the other side more (patience / discounting) and the deadline effect",
+        "Game card in plain language; says which assumption (other side's limit, trial odds) most changes the answer"
       ]
     }
   ]
