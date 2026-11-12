@@ -167,6 +167,19 @@ The skill follows the open `SKILL.md` format, so agents that read skills from a 
 - Python 3.10+ and [uv](https://docs.astral.sh/uv/). Every script declares its own dependencies inline and runs with `uv run`; nothing is installed globally.
 - Internet access for the location module (OpenStreetMap, Overture Maps) and for some data sources.
 
+### Network access and data
+
+The game solvers (`scripts/solvers/`) run offline. Only the location scripts contact outside services, and only with what you pass them:
+
+| Script | Service | What is sent |
+|---|---|---|
+| `competitors_osm.py`, `demand.py`, `isochrones.py` | OpenStreetMap Overpass API (`overpass-api.de`, fallback `overpass.private.coffee`) | a bounding box or point and radius, and map tags |
+| `geocode.py` | OpenStreetMap Nominatim (`nominatim.openstreetmap.org`) | the addresses you ask it to geocode |
+| `competitors_overture.py` | Overture Maps public dataset (`s3://overturemaps-us-west-2`, read-only) | a bounding box query |
+| `map.py` (when you open the HTML map) | map tiles from OpenStreetMap and JavaScript from jsDelivr | the map area being viewed |
+
+`uv run` downloads the Python packages each script declares from PyPI. Nothing is sent anywhere else: no telemetry, no API keys, no accounts. Results are written only to files in your working directory. Each service above has its own usage and retention policy.
+
 ## Use
 
 Just ask. The skill activates on questions about competition, location, auctions, tenders, negotiation, mergers, collusion or evolutionary dynamics, in any language. A few examples:
