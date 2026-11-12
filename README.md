@@ -178,7 +178,7 @@ The game solvers (`scripts/solvers/`) run offline. Only the location scripts con
 | `competitors_overture.py` | Overture Maps public dataset (`s3://overturemaps-us-west-2`, read-only) | a bounding box query |
 | `map.py` (when you open the HTML map) | map tiles from OpenStreetMap and JavaScript from jsDelivr | the map area being viewed |
 
-`uv run` downloads the Python packages each script declares from PyPI. Nothing is sent anywhere else: no telemetry, no API keys, no accounts. Results are written only to files in your working directory. Each service above has its own usage and retention policy.
+`uv run` downloads the Python packages each script declares from PyPI. Nothing is sent anywhere else: no telemetry, no API keys, no accounts. Results are written only to files in your working directory. Each service above has its own usage and retention policy. Full privacy policy: [PRIVACY.md](PRIVACY.md).
 
 ## Use
 
